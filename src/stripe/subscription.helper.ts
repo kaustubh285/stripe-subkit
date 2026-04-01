@@ -20,7 +20,7 @@ function _normalizeSubscription(subscription: Stripe.Subscription): StripeSubKit
 
 
 	let userId: string | undefined = undefined;
-	if (typeof subscription.customer === 'object' && subscription.customer !== null) {
+	if (typeof subscription.customer === 'object' && subscription.customer !== null && 'metadata' in subscription.customer) {
 		userId = subscription.customer.metadata?.userId;
 	}
 
@@ -200,15 +200,19 @@ export async function shGetAllSubscriptions({ stripe, status }: { stripe: Stripe
 		let startingAfter: string | undefined = undefined;
 
 		while (hasMore) {
-			const response: Stripe.Response<Stripe.ApiList<Stripe.Subscription>> = await stripe.subscriptions.list({
-				status: Array.isArray(status) ? undefined : (status || 'active'),
+			const listParams: any = {
 				limit: 100,
 				starting_after: startingAfter,
 				expand: ['data.items.data.price', 'data.customer'],
-			});
+			};
+
+			if (!Array.isArray(status)) {
+				listParams.status = status || 'active';
+			}
+
+			const response: Stripe.Response<Stripe.ApiList<Stripe.Subscription>> = await stripe.subscriptions.list(listParams);
 
 			response.data.forEach(sub => {
-				// Filter by status array if provided
 				if (Array.isArray(status) && !status.includes(sub.status as SubscriptionStatus)) {
 					return;
 				}

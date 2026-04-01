@@ -1,25 +1,65 @@
 {
-	"version": "0.0.1",
 	"name": "stripe-subkit",
-	"module": "index.ts",
+	"version": "0.1.0",
+	"description": "A TypeScript-first developer experience kit for Stripe subscriptions that sits on top of the official Stripe Node SDK",
+	"keywords": [
+		"stripe",
+		"subscriptions",
+		"typescript",
+		"payments",
+		"billing"
+	],
+	"author": "stripe-subkit contributors",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/kaustubh285/stripe-subkit.git"
+	},
+	"homepage": "https://github.com/kaustubh285/stripe-subkit#readme",
+	"bugs": {
+		"url": "https://github.com/kaustubh285/stripe-subkit/issues"
+	},
 	"type": "module",
 	"main": "dist/index.js",
+	"module": "dist/index.js",
 	"types": "dist/index.d.ts",
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		}
+	},
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"engines": {
+		"node": ">=18.0.0"
+	},
 	"scripts": {
 		"build": "tsc",
+		"clean": "rm -rf dist",
+		"prepublishOnly": "npm run clean && npm run build && npm run audit",
 		"dev": "tsc -w",
-		"test": "bun test tests/test.test.ts"
+		"test": "bun test tests/test.test.ts",
+		"typecheck": "tsc --noEmit",
+		"audit": "npm audit --audit-level=moderate",
+		"check-package": "npm run typecheck && npm run build && npm run test"
+	},
+	"peerDependencies": {
+		"stripe": ">=10.0.0"
 	},
 	"devDependencies": {
 		"@jest/globals": "^30.3.0",
-		"@types/bun": "latest"
-	},
-	"peerDependencies": {
+		"@types/bun": "latest",
+		"@types/node": "^20.0.0",
 		"typescript": "^5.9.3"
 	},
-	"dependencies": {
-		"dotenv": "^17.3.1",
-		"stripe": "^20.4.1"
-	},
-	"license": "MIT"
+	"dependencies": {},
+	"peerDependenciesMeta": {
+		"stripe": {
+			"optional": false
+		}
+	}
 }

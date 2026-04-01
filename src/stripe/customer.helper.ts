@@ -69,7 +69,7 @@ export async function shFindCustomer({ stripe, localUserId, email }: { stripe: S
 			if (customerWithoutUserId) {
 
 				await stripe.customers.update(customerWithoutUserId.id, {
-					metadata: { ...customerWithoutUserId.metadata, userId: localUserId }
+					metadata: { ...customerWithoutUserId.metadata, userId: localUserId! }
 				});
 				return _normalizeCustomer(customerWithoutUserId);
 			}
