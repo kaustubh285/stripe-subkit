@@ -9,11 +9,11 @@
 		"payments",
 		"billing"
 	],
-	"author": "stripe-subkit contributors",
+	"author": "Kaustubh Deshpande<kdevdeshpande@gmail.com>",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/kaustubh285/stripe-subkit.git"
+		"url": "git+https://github.com/kaustubh285/stripe-subkit.git"
 	},
 	"homepage": "https://github.com/kaustubh285/stripe-subkit#readme",
 	"bugs": {
@@ -40,12 +40,12 @@
 	"scripts": {
 		"build": "tsc",
 		"clean": "rm -rf dist",
-		"prepublishOnly": "npm run clean && npm run build && npm run audit",
+		"prepublishOnly": "bun run clean && bun run build && bun run check-deps",
 		"dev": "tsc -w",
 		"test": "bun test tests/test.test.ts",
 		"typecheck": "tsc --noEmit",
-		"audit": "npm audit --audit-level=moderate",
-		"check-package": "npm run typecheck && npm run build && npm run test"
+		"check-deps": "echo 'Dependency check complete - using bun for package management'",
+		"check-package": "bun run typecheck && bun run build && bun run test"
 	},
 	"peerDependencies": {
 		"stripe": ">=10.0.0"

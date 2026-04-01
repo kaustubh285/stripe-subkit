@@ -41,7 +41,7 @@ describe('Customer Management', () => {
 			expect(updatedSub).toBeDefined();
 			expect(updatedSub.cancelAtPeriodEnd).toBe(true);
 			expect(updatedSub.metadata?.reason).toBe('Test cancellation');
-			console.log('Updated subscription:', updatedSub);
+			// console.log('Updated subscription:', updatedSub);
 		} else {
 			console.log('Skipping update test - no active subscriptions found for user');
 		}
@@ -61,7 +61,7 @@ describe('Customer Management', () => {
 
 			expect(updatedSub).toBeDefined();
 			expect(updatedSub.cancelAtPeriodEnd).toBe(false);
-			console.log('Reactivated subscription:', updatedSub);
+			// console.log('Reactivated subscription:', updatedSub);
 		} else {
 			console.log('Skipping reactivate test - no active subscriptions found for user');
 		}
@@ -80,17 +80,15 @@ describe('Customer Management', () => {
 		})).rejects.toThrow('No active subscriptions found for this user');
 	})
 
-	return;
-
 
 	it('should retrieve subscriptions by status', async () => {
 		const activeSubscriptions = await subkit.getAllSubscriptions('active');
 		expect(Array.isArray(activeSubscriptions)).toBe(true);
-		console.log('Active Subscriptions:', activeSubscriptions);
+		// console.log('Active Subscriptions:', activeSubscriptions);
 
 		const canceledSubscriptions = await subkit.getAllSubscriptions('canceled');
 		expect(Array.isArray(canceledSubscriptions)).toBe(true);
-		console.log('Canceled Subscriptions:', canceledSubscriptions);
+		// console.log('Canceled Subscriptions:', canceledSubscriptions);
 	})
 
 	it('should retrieve or create customer with localUserId', async () => {
@@ -101,7 +99,6 @@ describe('Customer Management', () => {
 		expect(customer.metadata?.userId).toBe('test-user-123');
 		expect(customer.customerId).toBeDefined();
 
-		console.log('Customer:', customer);
 	})
 
 	it('should retrieve or create customer without localUserId', async () => {
@@ -113,7 +110,6 @@ describe('Customer Management', () => {
 		// Should not have userId in metadata when not provided
 		expect(customer.metadata?.userId).toBeFalsy();
 
-		console.log('Customer without userId:', customer);
 	})
 
 	it('should retrieve customer with localUserId', async () => {
@@ -143,13 +139,11 @@ describe('Customer Management', () => {
 	it('should retrieve user subscriptions by userId', async () => {
 		const subscriptions = await subkit.getUserSubscriptions({ userId: 'test-user-123' });
 		expect(Array.isArray(subscriptions)).toBe(true);
-		console.log('User Subscriptions by userId:', subscriptions);
 	})
 
 	it('should retrieve user subscriptions by email', async () => {
 		const subscriptions = await subkit.getUserSubscriptions({ email: 'kdevdeshpande@gmail.com' });
 		expect(Array.isArray(subscriptions)).toBe(true);
-		console.log('User Subscriptions by email:', subscriptions);
 	})
 
 	it('should handle getUserSubscriptions with no matching user', async () => {
