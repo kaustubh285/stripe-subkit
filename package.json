@@ -1,7 +1,7 @@
 {
 	"name": "stripe-subkit",
 	"version": "0.1.0",
-	"description": "A TypeScript-first developer experience kit for Stripe subscriptions that sits on top of the official Stripe Node SDK",
+	"description": "Bring order to your Stripe customers and subscriptions: metadata-aware lookups, normalized reads, and user-centric helpers for TypeScript backends.",
 	"keywords": [
 		"stripe",
 		"subscriptions",
