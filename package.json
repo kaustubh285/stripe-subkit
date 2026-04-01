@@ -1,0 +1,25 @@
+{
+	"version": "0.0.1",
+	"name": "stripe-subkit",
+	"module": "index.ts",
+	"type": "module",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"scripts": {
+		"build": "tsc",
+		"dev": "tsc -w",
+		"test": "bun test tests/test.test.ts"
+	},
+	"devDependencies": {
+		"@jest/globals": "^30.3.0",
+		"@types/bun": "latest"
+	},
+	"peerDependencies": {
+		"typescript": "^5.9.3"
+	},
+	"dependencies": {
+		"dotenv": "^17.3.1",
+		"stripe": "^20.4.1"
+	},
+	"license": "MIT"
+}
