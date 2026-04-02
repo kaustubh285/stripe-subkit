@@ -1,5 +1,7 @@
 # stripe-subkit
 
+[![npm version](https://img.shields.io/npm/v/stripe-subkit)](https://www.npmjs.com/package/stripe-subkit) [![npm downloads](https://img.shields.io/npm/dm/stripe-subkit)](https://www.npmjs.com/package/stripe-subkit) [![license](https://img.shields.io/npm/l/stripe-subkit)](LICENSE)
+
 A TypeScript-first developer experience kit for Stripe subscriptions that sits on top of the official Stripe Node SDK.
 
 ## Overview
