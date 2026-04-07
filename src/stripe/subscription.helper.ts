@@ -34,8 +34,8 @@ function _normalizeSubscription(subscription: Stripe.Subscription): StripeSubKit
 		currency: price.currency,
 		unitAmount: price.unit_amount,
 		interval: price.recurring?.interval as 'day' | 'week' | 'month' | 'year',
-		currentPeriodStart: new Date(subscription.created * 1000),
-		currentPeriodEnd: new Date(subscription.status === 'canceled' && subscription.ended_at ? subscription.ended_at * 1000 : Date.now()),
+		currentPeriodStart: new Date(subscription.current_period_start * 1000),
+		currentPeriodEnd: new Date(subscription.current_period_end * 1000),
 		cancelAtPeriodEnd: subscription.cancel_at_period_end,
 		metadata: subscription.metadata || {},
 	};
@@ -49,7 +49,7 @@ export async function shGetUserSubscriptions(stripe: Stripe, params: { userId?: 
 	}
 
 	try {
-		const customer = await shFindCustomer({ stripe, localUserId: userId, email: email! });
+		const customer = await shFindCustomer({ stripe, localUserId: userId, email });
 
 		if (!customer) {
 			return [];
@@ -172,9 +172,10 @@ export async function shUpdateSubscription(stripe: Stripe, params: UpdateSubscri
 				break;
 
 			case 'cancel-now':
-				updatedSubscription = await stripe.subscriptions.update(subscriptionId, {
-					metadata: mergedMetadata,
-					cancel_at: Math.floor(Date.now() / 1000),
+				if (Object.keys(mergedMetadata).length > 0) {
+					await stripe.subscriptions.update(subscriptionId, { metadata: mergedMetadata });
+				}
+				updatedSubscription = await stripe.subscriptions.cancel(subscriptionId, {
 					expand: ['customer', 'items.data.price']
 				});
 				break;
@@ -191,39 +192,31 @@ export async function shUpdateSubscription(stripe: Stripe, params: UpdateSubscri
 }
 
 export async function shGetAllSubscriptions({ stripe, status }: { stripe: Stripe, status?: SubscriptionStatus | SubscriptionStatus[] }): Promise<StripeSubKitSubscription[]> {
-	if (!process.env.STRIPE_SECRET_KEY) {
-		throw new Error('STRIPE_SECRET_KEY is not set in environment variables');
-	}
 	try {
+		if (Array.isArray(status)) {
+			const results = await Promise.all(
+				status.map(s => shGetAllSubscriptions({ stripe, status: s }))
+			);
+			return results.flat();
+		}
+
 		const subscriptions: StripeSubKitSubscription[] = [];
 		let hasMore = true;
 		let startingAfter: string | undefined = undefined;
 
 		while (hasMore) {
-			const listParams: any = {
+			const response = await stripe.subscriptions.list({
 				limit: 100,
 				starting_after: startingAfter,
 				expand: ['data.items.data.price', 'data.customer'],
-			};
-
-			if (!Array.isArray(status)) {
-				listParams.status = status || 'active';
-			}
-
-			const response: Stripe.Response<Stripe.ApiList<Stripe.Subscription>> = await stripe.subscriptions.list(listParams);
-
-			response.data.forEach(sub => {
-				if (Array.isArray(status) && !status.includes(sub.status as SubscriptionStatus)) {
-					return;
-				}
-
-				const normalizedSub = _normalizeSubscription(sub);
-				subscriptions.push(normalizedSub);
+				status: status || 'active',
 			});
+
+			response.data.forEach(sub => subscriptions.push(_normalizeSubscription(sub)));
 
 			hasMore = response.has_more;
 			if (hasMore) {
-				startingAfter = response?.data[response.data.length - 1]?.id;
+				startingAfter = response.data[response.data.length - 1]?.id;
 			}
 		}
 

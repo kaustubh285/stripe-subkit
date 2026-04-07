@@ -1,8 +1,5 @@
 export { createStripeSubkit } from './main.js';
-export type {
-	CustomerStrategy,
-	StripeSubkitConfig
-} from './main.js';
+export type { StripeSubkitConfig } from './main.js';
 export type {
 	UpdateSubscriptionAction,
 	UpdateSubscriptionParams

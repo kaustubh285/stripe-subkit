@@ -28,7 +28,19 @@ export async function shFindOrCreateCustomer({ stripe, localUserId, email }: { s
 	try {
 		const existingCustomer = await shFindCustomer({ stripe, localUserId, email });
 		if (existingCustomer) {
-			return existingCustomer
+			return existingCustomer;
+		}
+
+		// If a localUserId was provided, check if there's an unclaimed customer with this email and claim it rather than creating a duplicate.
+		if (localUserId) {
+			const existingByEmail = await stripe.customers.list({ email, limit: 100 });
+			const unclaimed = existingByEmail.data.find(c => !c.metadata?.userId);
+			if (unclaimed) {
+				const updated = await stripe.customers.update(unclaimed.id, {
+					metadata: { ...unclaimed.metadata, userId: localUserId }
+				});
+				return _normalizeCustomer(updated);
+			}
 		}
 
 		const newCustomer = await stripe.customers.create({
@@ -44,39 +56,33 @@ export async function shFindOrCreateCustomer({ stripe, localUserId, email }: { s
 }
 
 
-
-export async function shFindCustomer({ stripe, localUserId, email }: { stripe: Stripe, localUserId?: string, email: string }): Promise<SubkitCustomer | null> {
+export async function shFindCustomer({ stripe, localUserId, email }: { stripe: Stripe, localUserId?: string, email?: string }): Promise<SubkitCustomer | null> {
 	try {
-		const existingByEmail = await stripe.customers.list({
-			email: email,
-			limit: 100
-		});
-
-		if (existingByEmail.data.length > 0) {
-			if (!localUserId && existingByEmail.data[0]) {
-				return _normalizeCustomer(existingByEmail.data[0]);
-			}
-
-			const customerWithUserId = existingByEmail.data.find(c => c.metadata?.userId === localUserId);
-
-			if (customerWithUserId) {
-				return _normalizeCustomer(customerWithUserId);
-			}
-
-
-			const customerWithoutUserId = existingByEmail.data.find(c => !c.metadata?.userId);
-
-			if (customerWithoutUserId) {
-
-				await stripe.customers.update(customerWithoutUserId.id, {
-					metadata: { ...customerWithoutUserId.metadata, userId: localUserId! }
-				});
-				return _normalizeCustomer(customerWithoutUserId);
-			}
-
+		// When only localUserId is provided (no email), search by metadata.
+		if (!email && localUserId) {
+			const result = await stripe.customers.search({
+				query: `metadata["userId"]:"${localUserId}"`,
+				limit: 1,
+			});
+			return result.data[0] ? _normalizeCustomer(result.data[0]) : null;
 		}
 
-		return null
+		if (!email) {
+			return null;
+		}
+
+		const existingByEmail = await stripe.customers.list({ email, limit: 100 });
+
+		if (existingByEmail.data.length === 0) {
+			return null;
+		}
+
+		if (!localUserId) {
+			return _normalizeCustomer(existingByEmail.data[0]!);
+		}
+
+		const customerWithUserId = existingByEmail.data.find(c => c.metadata?.userId === localUserId);
+		return customerWithUserId ? _normalizeCustomer(customerWithUserId) : null;
 
 	} catch (error) {
 		throw new Error(`Failed to resolve customer: ${error instanceof Error ? error.message : error}`);
